@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tickfeed": {
+      "url": "https://api.tickfeed.pro/mcp",
+      "headers": { "Authorization": "Bearer ${env:TICKFEED_API_KEY}" }
+    }
+  }
+}

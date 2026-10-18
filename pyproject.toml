@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tickfeed"
+version = "0.1.0"
+description = "Official Python client for the TickFeed market data API: live bid/ask and OHLC candles for 60 forex pairs and 11 metals."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["forex", "gold", "xauusd", "market data", "api", "candles", "ohlc", "trading", "backtesting", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+pandas = ["pandas>=2"]
+
+[project.urls]
+Homepage = "https://tickfeed.pro"
+Documentation = "https://tickfeed.pro/developer-guide"
+"API reference" = "https://api.tickfeed.pro/docs"
+"MCP setup" = "https://tickfeed.pro/agents"
+Status = "https://tickfeed.pro/status"
+Repository = "https://github.com/TickFeedAPI/tickfeed"
+Changelog = "https://github.com/TickFeedAPI/tickfeed/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tickfeed = ["py.typed"]

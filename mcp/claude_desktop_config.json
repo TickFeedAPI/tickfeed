@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "tickfeed": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://api.tickfeed.pro/mcp",
+               "--header", "Authorization:${TICKFEED_AUTH}"],
+      "env": { "TICKFEED_AUTH": "Bearer YOUR_TICKFEED_KEY" }
+    }
+  }
+}

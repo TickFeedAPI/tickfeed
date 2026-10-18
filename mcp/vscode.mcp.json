@@ -1,0 +1,12 @@
+{
+  "inputs": [
+    { "type": "promptString", "id": "tickfeed-key", "description": "TickFeed API key", "password": true }
+  ],
+  "servers": {
+    "tickfeed": {
+      "type": "http",
+      "url": "https://api.tickfeed.pro/mcp",
+      "headers": { "Authorization": "Bearer ${input:tickfeed-key}" }
+    }
+  }
+}
