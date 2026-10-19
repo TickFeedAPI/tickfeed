@@ -71,8 +71,12 @@ curl -H "X-API-Key: $TICKFEED_API_KEY" "https://api.tickfeed.pro/v1/candles/EURU
 
 ## Use it from an AI assistant (MCP)
 
-Server URL: `https://api.tickfeed.pro/mcp` (Streamable HTTP). Authenticate with
-`Authorization: Bearer <your key>` or `X-API-Key`.
+Server URL: `https://api.tickfeed.pro/mcp` (Streamable HTTP).
+
+**Claude app (web, desktop, mobile), ChatGPT and other apps with MCP sign-in:** add a custom connector with that
+URL, then sign in with your TickFeed account and click **Approve**. No key or config file needed.
+
+**Code editors and scripts:** authenticate with `Authorization: Bearer <your key>` or `X-API-Key`.
 
 **Claude Code**
 
