@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tickfeed"
-version = "0.1.0"
-description = "Official Python client for the TickFeed market data API: live bid/ask and OHLC candles for 60 forex pairs and 11 metals."
+version = "0.2.0"
+description = "Official Python client for the TickFeed market data API: live bid/ask, OHLC candles and raw ticks for 60 forex pairs and 11 metals."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

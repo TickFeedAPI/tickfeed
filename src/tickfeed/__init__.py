@@ -9,6 +9,8 @@
 
     quotes = tf.prices(["EURUSD", "GBPUSD", "USDJPY"])["prices"]   # several pairs, one request
     bars = tf.candles("EURUSD", "M5", limit=100)["candles"]
+    secs = tf.candles("XAUUSD", "S1", limit=60)["candles"]       # seconds bars, built from tick history
+    ticks = tf.ticks("XAUUSD", limit=100)["ticks"]                 # raw bid/ask changes, millisecond UTC
 
 Errors raise TickFeedError (with .status and .code). 429 and 503 responses and connection errors
 are retried with backoff (honouring Retry-After) up to ``max_retries`` times.
@@ -28,11 +30,18 @@ import urllib.request
 from datetime import datetime, timezone
 from typing import Any, Iterable, Iterator
 
-__version__ = "0.1.0"
-__all__ = ["TickFeed", "TickFeedError", "RateLimitedError", "UnavailableError", "parse_time", "TIMEFRAMES"]
+__version__ = "0.2.0"
+__all__ = ["TickFeed", "TickFeedError", "RateLimitedError", "UnavailableError", "parse_time", "TIMEFRAMES",
+           "SECONDS_TIMEFRAMES", "CANDLE_TIMEFRAMES"]
 
 DEFAULT_BASE_URL = "https://api.tickfeed.pro"
+# Minute-and-longer timeframes: stored history, source="stored" and gap reports. Unchanged since 0.1.0.
 TIMEFRAMES = ("M1", "M5", "M15", "M30", "H1", "H4", "D1")
+# Seconds timeframes: built on request from tick history (about the last six months, rolling). Live only
+# (no source="stored") and no gap report.
+SECONDS_TIMEFRAMES = ("S1", "S5", "S15", "S30")
+# Every timeframe GET /v1/candles accepts.
+CANDLE_TIMEFRAMES = SECONDS_TIMEFRAMES + TIMEFRAMES
 
 
 class TickFeedError(Exception):
@@ -164,9 +173,14 @@ class TickFeed:
     def candles(self, symbol: str, timeframe: str = "M5", limit: int = 100,
                 start_time: datetime | str | None = None, end_time: datetime | str | None = None,
                 source: str = "live") -> dict:
-        """One page of OHLC candles, oldest first. The last bar may have complete=False."""
-        if timeframe not in TIMEFRAMES:
-            raise ValueError(f"timeframe must be one of {TIMEFRAMES}")
+        """One page of OHLC candles, oldest first. The last bar may have complete=False.
+
+        timeframe is one of CANDLE_TIMEFRAMES. Seconds timeframes (S1, S5, S15, S30) are built from tick history
+        (about the last six months) and are live only: source="stored" raises ValueError for them."""
+        if timeframe not in CANDLE_TIMEFRAMES:
+            raise ValueError(f"timeframe must be one of {CANDLE_TIMEFRAMES}")
+        if timeframe in SECONDS_TIMEFRAMES and source == "stored":
+            raise ValueError(f"{timeframe} candles are built from tick history and are not stored; use source='live'")
         return self._get(f"/v1/candles/{urllib.parse.quote(symbol)}", {
             "timeframe": timeframe, "limit": limit, "start_time": _iso(start_time),
             "end_time": _iso(end_time), "source": source,
@@ -185,9 +199,35 @@ class TickFeed:
 
     def gaps(self, symbol: str, timeframe: str = "M5", start_time: datetime | str | None = None,
              end_time: datetime | str | None = None) -> dict:
-        """Missing intervals in stored history, each marked expected (market closed) or not."""
+        """Missing intervals in stored history, each marked expected (market closed) or not.
+        Stored timeframes only (TIMEFRAMES): seconds candles are built on request and have no gap report."""
+        if timeframe in SECONDS_TIMEFRAMES:
+            raise ValueError(f"{timeframe} has no gap report (seconds candles are not stored); "
+                             f"use one of {TIMEFRAMES}")
         return self._get(f"/v1/candles/{urllib.parse.quote(symbol)}/gaps", {
             "timeframe": timeframe, "start_time": _iso(start_time), "end_time": _iso(end_time)})
+
+    def ticks(self, symbol: str, limit: int = 1000, start_time: datetime | str | None = None,
+              end_time: datetime | str | None = None) -> dict:
+        """One page of raw ticks (every bid/ask change), oldest first: {'ticks': [{'time', 'bid', 'ask'}, ...]}.
+
+        With start_time: the first ``limit`` ticks from start_time (up to end_time or now); if more exist,
+        'truncated' is True and 'next_start_time' starts the next page. Without: the latest ``limit`` ticks up to
+        end_time (or now). limit is 1-10,000 (default 1,000). Times are UTC with milliseconds, and several ticks
+        can share one millisecond. History covers about the last six months (rolling; see 'notes').
+        Cost: one unit per started block of 1,000 ticks returned."""
+        return self._get(f"/v1/ticks/{urllib.parse.quote(symbol)}", {
+            "limit": limit, "start_time": _iso(start_time), "end_time": _iso(end_time)})
+
+    def iter_ticks(self, symbol: str, start_time: datetime | str, end_time: datetime | str | None = None,
+                   page_size: int = 10000) -> Iterator[dict]:
+        """Yield every tick in [start_time, end_time], following the server's next_start_time. Pages end on a
+        whole millisecond, so ticks that share a timestamp are never split, repeated or skipped."""
+        cursor: datetime | str | None = start_time
+        while cursor is not None:
+            page = self.ticks(symbol, page_size, cursor, end_time)
+            yield from page["ticks"]
+            cursor = page["next_start_time"] if page["truncated"] else None
 
     def candles_df(self, symbol: str, timeframe: str = "M5", limit: int = 100,
                    completed_only: bool = True, **kwargs):
