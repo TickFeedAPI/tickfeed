@@ -87,8 +87,7 @@ curl -H "X-API-Key: $TICKFEED_API_KEY" "https://api.tickfeed.pro/v1/candles/EURU
 
 > **Not on PyPI yet.** `pip install tickfeed` currently installs **0.1.0**, which rejects `S1`, `S5`, `S15` and
 > `S30` with `ValueError` before sending anything and has no `ticks()` method. The API itself already serves both.
-> Until 0.2.0 is released, call the REST endpoints directly (curl below), or install this repository's source with
-> `pip install "git+https://github.com/TickFeedAPI/tickfeed"`.
+> Until 0.2.0 is released on PyPI, call the REST endpoints directly (curl below).
 > Check what you have with `python -c "import tickfeed; print(tickfeed.__version__)"`.
 
 ```python
