@@ -15,6 +15,9 @@ Claude Code, Claude Desktop, Cursor, VS Code and Windsurf.
 [sign-up page](https://tickfeed.pro/signup). After that it's pay as you go from $0.002 per request, with no
 subscription.
 
+**Try it before you sign up:** the [API playground](https://tickfeed.pro/playground) runs a real
+`GET /v1/price` request for XAUUSD, EURUSD or GBPUSD in your browser, no account needed.
+
 ### From sign-up to your first request
 
 1. [Create an account](https://tickfeed.pro/signup) and confirm your email with the code we send. The free credit
