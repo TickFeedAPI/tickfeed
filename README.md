@@ -88,9 +88,8 @@ curl -H "X-API-Key: $TICKFEED_API_KEY" "https://api.tickfeed.pro/v1/candles/EURU
 
 ### Seconds candles and raw ticks (client 0.2.0)
 
-> **Not on PyPI yet.** `pip install tickfeed` currently installs **0.1.0**, which rejects `S1`, `S5`, `S15` and
-> `S30` with `ValueError` before sending anything and has no `ticks()` method. The API itself already serves both.
-> Until 0.2.0 is released on PyPI, call the REST endpoints directly (curl below).
+> Needs client **0.2.0 or later** (`pip install -U tickfeed`). 0.1.0 rejects `S1`, `S5`, `S15` and `S30` with
+> `ValueError` before sending anything and has no `ticks()` method; the REST endpoints below work with any version.
 > Check what you have with `python -c "import tickfeed; print(tickfeed.__version__)"`.
 
 ```python
@@ -190,6 +189,15 @@ REST; see above). `tf.symbols()` (free) always returns the current list.
 history is much shorter, and seconds candles and raw ticks cover about the last six months, rolling. Before you
 plan a long backtest, check `history_from` in `tf.symbols()`: the earliest stored bar for every symbol and
 timeframe.
+
+## Connections and speed
+
+Create one `TickFeed` and reuse it. From 0.2.0 the client keeps its HTTPS connection open between requests (one
+connection per thread), so only the first request pays for the TCP and TLS handshake. Measured from Europe, that
+took a small request from about 72 ms to about 49 ms (median); further from the API the saving per request is
+larger. A connection the server closed while idle is replaced automatically. Use `with TickFeed() as tf:` or
+`tf.close()` to close connections when you are done. Proxies set in `HTTPS_PROXY` / `HTTP_PROXY` / `NO_PROXY` (or
+the system settings) are used, as before.
 
 ## Errors and retries
 
