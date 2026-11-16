@@ -1,8 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
-
-Not yet published to PyPI: `pip install tickfeed` still installs 0.1.0 until this version is released.
+## 0.2.0 (2026-11-16)
 
 - `candles()`, `iter_candles()` and `candles_df()` accept the seconds timeframes `S1`, `S5`, `S15` and `S30`, which
   the API already served. 0.1.0 rejected them with `ValueError` before sending a request. Seconds candles are built
