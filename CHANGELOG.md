@@ -13,6 +13,16 @@ Not yet published to PyPI: `pip install tickfeed` still installs 0.1.0 until thi
   the stored timeframes) so code that uses it for gap reports or stored history keeps working.
 - `gaps()` raises `ValueError` for a seconds timeframe (the API has no gap report for them) instead of sending a
   request that returns 422.
+- Faster requests: the client keeps its connection open and reuses it (one per thread, still thread-safe) instead of
+  opening a new TCP and TLS connection for every call. Median latency for a small request measured from Europe went
+  from about 72 ms to 49 ms. A connection closed by the server while idle is replaced and the request re-sent once,
+  immediately and without using up a retry. New `close()`, and `TickFeed` works as a context manager.
+- Proxy settings from the environment (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`, system settings) are still honoured;
+  they are now read once when the client is created.
+- Redirects are no longer followed. A redirect raises `TickFeedError` with code `redirect` and the target address, so
+  an API key is never re-sent to another address. The API itself does not redirect API requests; this only affects
+  a `base_url` of `http://…`, which was redirected to `https://` after the key had already been sent unencrypted.
+- `base_url` must be an `http://` or `https://` URL (`ValueError` otherwise).
 - README: first-request steps in the order that works (confirm email, create key, call), rate-limit scope, current
   MCP tool list (7, including `get_ticks`), history depth, and install commands for each example.
 

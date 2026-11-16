@@ -191,6 +191,15 @@ history is much shorter, and seconds candles and raw ticks cover about the last 
 plan a long backtest, check `history_from` in `tf.symbols()`: the earliest stored bar for every symbol and
 timeframe.
 
+## Connections and speed
+
+Create one `TickFeed` and reuse it. From 0.2.0 the client keeps its HTTPS connection open between requests (one
+connection per thread), so only the first request pays for the TCP and TLS handshake. Measured from Europe, that
+took a small request from about 72 ms to about 49 ms (median); further from the API the saving per request is
+larger. A connection the server closed while idle is replaced automatically. Use `with TickFeed() as tf:` or
+`tf.close()` to close connections when you are done. Proxies set in `HTTPS_PROXY` / `HTTP_PROXY` / `NO_PROXY` (or
+the system settings) are used, as before.
+
 ## Errors and retries
 
 The client raises `TickFeedError` with `.status` and `.code` (for example `unsupported_symbol`,
